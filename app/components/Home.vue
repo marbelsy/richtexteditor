@@ -4,22 +4,30 @@
             <Label text="Home"/>
         </ActionBar>
 
-        <GridLayout>
-            <Label class="info">
-                <FormattedString>
-                    <Span class="fas" text.decode="&#xf135; "/>
-                    <Span :text="message"/>
-                </FormattedString>
-            </Label>
-        </GridLayout>
+      <GridLayout columns="*, *" rows="50, *" backgroundColor="red">
+        <Button text="Video" col="0" row="0" @tap="insertVideo"/>
+        <Button text="Link" col="1" row="0" @tap="insertLinkSample"/>
+        <RichTextEditor row="1" col="0" colSpan="2" @loaded="editorLoaded"/>
+      </GridLayout>
     </Page>
 </template>
 
 <script>
   export default {
-    computed: {
-      message() {
-        return "Blank {N}-Vue app";
+    data() {
+      return {
+        editor: null
+      }
+    },
+    methods: {
+      editorLoaded(args) {
+        this.editor = args.object
+      },
+      insertVideo() {
+        this.editor.insertVideoSample()
+      },
+      insertLinkSample() {
+        this.editor.insertLinkSample()
       }
     }
   };
