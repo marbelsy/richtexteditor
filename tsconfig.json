@@ -1,29 +1,25 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "node",
-    "declaration": false,
-    "removeComments": true,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
+    "moduleResolution": "bundler",
+    "lib": ["dom", "ESNext"],
     "sourceMap": true,
-    "skipLibCheck": true,
-    "skipDefaultLibCheck": true,
-    "preserveSymlinks": true,
-    "allowUnreachableCode": false,
-    "allowSyntheticDefaultImports": true,
-    "allowUnusedLabels": false,
     "noEmitHelpers": true,
-    "noEmitOnError": true,
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitUseStrict": false,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "lib": ["esnext", "es2017", "dom"]
+    "importHelpers": true,
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["app/*"],
+      "@/*": ["app/*"]
+    },
+    "typeRoots": ["types"],
+    "types": ["node"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "skipLibCheck": true
   },
-  "exclude": [
-  ],
-  "include": ["app/**/*.ts", "app/**/*.ios.ts", "app/**/*.android.ts"]
+  "include": ["app", "types", "./references.d.ts", "./**/*.ios.ts", "./**/*.android.ts"],
+  "exclude": ["node_modules", "platforms"]
 }

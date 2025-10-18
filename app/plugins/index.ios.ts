@@ -1,10 +1,9 @@
 import { Utils } from "@nativescript/core";
 import { registerSwiftUI, SwiftUI, UIDataDriver } from "@nativescript/swift-ui";
-import { RichEditorData, RichEditorType } from "./common";
+import { RichEditorType } from "./common";
 
 export class RichEditor extends SwiftUI implements RichEditorType {
   provider: RichEditorProvider;
-  data: RichEditorData;
 
   constructor() {
     super();
@@ -14,8 +13,8 @@ export class RichEditor extends SwiftUI implements RichEditorType {
       registerSwiftUI(swiftId, (view) => {
         this.provider = RichEditorProvider.alloc().init();
         console.warn(this.provider);
-        console.warn(new UIDataDriver(this.provider, view))
-        return new UIDataDriver(this.provider, view);
+        console.warn(new UIDataDriver(this.provider as any, view))
+        return new UIDataDriver(this.provider as any, view);
       });
     }
     this.swiftId = swiftId;
