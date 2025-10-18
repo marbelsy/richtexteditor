@@ -40,7 +40,7 @@ export default {
         };
         editor.data = data;
       } else {
-        this.editor.insertVideoSample();
+        editor.insertVideoSample();
       }
     },
     insertLinkSample() {
