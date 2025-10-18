@@ -1,5 +1,10 @@
-declare class RichEditorProvider extends UIViewController implements SwiftUIProvider {
+/// <reference path="./node_modules/@nativescript/types/index.d.ts" />
+/// <reference path="./node_modules/@nativescript/swift-ui/index.d.ts" />
 
+declare class RichEditorProvider
+  extends UIViewController
+  implements SwiftUIProvider
+{
   static alloc(): RichEditorProvider; // inherited from NSObject
 
   static new(): RichEditorProvider; // inherited from NSObject

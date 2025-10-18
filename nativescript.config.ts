@@ -14,7 +14,7 @@ export default {
         name: 'RichTextKit',
         libs: ['RichTextKit'],
         repositoryURL: 'https://github.com/danielsaidi/RichTextKit.git',
-        version: '1.1.2'
+        version: '1.2'
       }
     ]
   }
