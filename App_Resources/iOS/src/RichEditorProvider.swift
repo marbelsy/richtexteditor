@@ -112,7 +112,7 @@ class RichEditorData: ObservableObject {
     var nonOptionalText: NSAttributedString {
         text ?? NSAttributedString(string: "")
     }
-    
+
     @Published var modifiers = NSArray()
     var onEvent: ((NSDictionary) -> Void)?
 }
@@ -122,22 +122,22 @@ class RichEditorData: ObservableObject {
 open class RichEditorProvider: UIViewController, SwiftUIProvider {
     private var props = RichEditorData()
     private var swiftUI: RichEditor?
-    
+
     required public init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
     }
-    
+
     required public init() {
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     public override func viewDidLoad() {
         super.viewDidLoad()
         props.onEvent = { data in
             self.onEvent!(data)
         }
     }
-    
+
     /// Receive data from NativeScript
     func updateData(data: NSDictionary) {
         let enumerator = data.keyEnumerator()
@@ -158,7 +158,7 @@ open class RichEditorProvider: UIViewController, SwiftUIProvider {
                 }
             }
         }
-        
+
         if (self.swiftUI == nil) {
             swiftUI = RichEditor(data: props)
             setupSwiftUIView(content: swiftUI)
@@ -167,7 +167,7 @@ open class RichEditorProvider: UIViewController, SwiftUIProvider {
             self.swiftUI?.data = props
         }
     }
-    
+
     /// Send data to NativeScript
     var onEvent: ((NSDictionary) -> ())?
 }

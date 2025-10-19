@@ -12,8 +12,6 @@ export class RichEditor extends SwiftUI implements RichEditorType {
     if (Utils.SDK_VERSION >= 17) {
       registerSwiftUI(swiftId, (view) => {
         this.provider = RichEditorProvider.alloc().init();
-        console.warn(this.provider);
-        console.warn(new UIDataDriver(this.provider as any, view))
         return new UIDataDriver(this.provider as any, view);
       });
     }
