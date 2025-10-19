@@ -31,6 +31,7 @@ export default {
   methods: {
     editorLoaded(args) {
       editor = args.object;
+      editor.data = data;
     },
     insertVideo() {
       if (__APPLE__) {
