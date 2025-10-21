@@ -16,6 +16,12 @@ export class RichEditor extends RichEditorCommon {
         });
       },
     }))
+    this.editor.setOnDecorationChangeListener(new jp.wasabeef.richeditor.RichEditor.OnDecorationStateListener({
+      onStateChangeListener: (test, decorations) => {
+        console.info(test)
+        console.warn(decorations)
+      }
+    }))
   }
 
   insertVideoSample() {
@@ -24,5 +30,17 @@ export class RichEditor extends RichEditorCommon {
 
   insertLinkSample() {
     this.editor.insertLink("https://nativescript.org", "NativeScript");
+  }
+
+  setUnorderedList() {
+    this.editor.setBullets()
+  }
+
+  setOrderedList() {
+    this.editor.setNumbers()
+  }
+
+  setBold() {
+    this.editor.setBold()
   }
 }

@@ -42,84 +42,125 @@ export class RichEditor extends SwiftUI implements RichEditorType {
       }
     };
   }
+
+  setOrderedList() {
+    console.warn('setOrderedList')
+    this.updateData({ setList: "numbered", enable: true });
+  }
+
+  setUnorderedList() {
+    this.updateData({ setList: "bullet", enable: true });
+  }
 }
 
-function attributedStringToHTML(attributedString: NSAttributedString): string {
-  let htmlString = "";
+function attributedStringToHTML(attr: NSAttributedString): string {
+  // First pass: inline tags for bold and links, preserve newlines
+  let htmlParts: string[] = [];
 
-  attributedString.enumerateAttributesInRangeOptionsUsingBlock(
-    { location: 0, length: attributedString.length },
+  attr.enumerateAttributesInRangeOptionsUsingBlock(
+    { location: 0, length: attr.length },
     NSAttributedStringEnumerationOptions.LongestEffectiveRangeNotRequired,
     (attributes, range, stop) => {
-      const substring = attributedString.string.substring(
-        range.location,
-        range.location + range.length
-      );
-      let span = `<span `;
+      let text = attr.string.substring(range.location, range.location + range.length);
 
-      let style = `style="`;
+      // Escape HTML special chars, keep newlines for later list handling
+      text = text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-      // Check for font
-      const font = attributes.objectForKey(NSFontAttributeName);
+      // Detect link
+      const link = attributes.objectForKey(NSLinkAttributeName) as NSURL | string;
+
+      // Detect bold
+      let isBold = false;
+      const font = attributes.objectForKey(NSFontAttributeName) as UIFont;
       if (font) {
-        const fontName = font.fontName;
-        const fontSize = font.pointSize;
-        style += `font-family: ${fontName}; font-size: ${fontSize}px;`;
-      }
-
-      // Check for text color
-      const color = attributes.objectForKey(NSForegroundColorAttributeName);
-      const paragraphStyle: NSParagraphStyle = attributes.objectForKey(
-        NSParagraphStyleAttributeName
-      );
-      if (paragraphStyle) {
-        switch (paragraphStyle.alignment) {
-          case NSTextAlignment.Center:
-            style += `text-align: center;`;
-            break;
-          case NSTextAlignment.Right:
-            style += `text-align: right;`;
-            break;
-          case NSTextAlignment.Justified:
-            style += `text-align: justify; text-justify: inter-word;`;
-            break;
-          default:
-            style += `text-align: left;`;
-            break;
+        const traits = font.fontDescriptor.symbolicTraits;
+        // Bitwise check for bold
+        // @ts-ignore
+        if (traits & UIFontDescriptorSymbolicTraits.TraitBold) {
+          isBold = true;
         }
       }
 
-      // Add other attributes (e.g., bold, italic)
-      const traits = font.fontDescriptor.symbolicTraits;
-      if (traits & UIFontDescriptorSymbolicTraits.TraitBold) {
-        style += `font-weight: bold;`;
+      // Compose wrappers (nest link outside, bold inside for valid HTML)
+      if (link) {
+        const href = typeof link === "string" ? link : (link as NSURL).absoluteString;
+        text = `<a href="${href}">${text}</a>`;
       }
-      if (traits & UIFontDescriptorSymbolicTraits.TraitItalic) {
-        style += `font-style: italic;`;
+      if (isBold) {
+        text = `<strong>${text}</strong>`; // can also use <b> ?
       }
-      let textDecoration: string;
-      const underline = attributes.objectForKey(NSUnderlineStyleAttributeName);
-      if (underline) {
-        textDecoration = addTextDecoration(textDecoration, "underline");
-      }
-      const strikethrough = attributes.objectForKey(
-        NSStrikethroughStyleAttributeName
-      );
-      if (strikethrough) {
-        textDecoration = addTextDecoration(textDecoration, "line-through");
-      }
-      if (textDecoration) {
-        style += textDecoration + ";";
-      }
-      span += `${style}"`;
 
-      // Close the span tag and add the text
-      span += `>${substring}</span>`;
-      htmlString += span;
+      htmlParts.push(text);
     }
   );
 
-  return htmlString;
+  const inlineHTML = htmlParts.join("");
+
+  // Second pass: convert lines with list markers into <ul>/<ol>
+  return normalizeLists(inlineHTML);
+}
+
+function normalizeLists(inlineHTML: string): string {
+  // Split on newlines preserved from the attributed string
+  const lines = inlineHTML.split(/\n/);
+
+  const ulMarker = /^\s*(?:[•\-\*])\s+(.*)$/;      // bullets: •, -, *
+  const olMarker = /^\s*(\d+)[.)]\s+(.*)$/;        // numbers: "1. " or "1) "
+
+  let out: string[] = [];
+  let currentList: { type: "ul" | "ol"; items: string[] } | null = null;
+
+  const flushList = () => {
+    if (!currentList) return;
+    const tag = currentList.type;
+    out.push(`<${tag}>`);
+    for (const it of currentList.items) out.push(`<li>${it}</li>`);
+    out.push(`</${tag}>`);
+    currentList = null;
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd(); // keep leading spaces for markers detection above
+
+    let m = line.match(ulMarker);
+    if (m) {
+      const item = m[1];
+      if (!currentList || currentList.type !== "ul") {
+        flushList();
+        currentList = { type: "ul", items: [] };
+      }
+      currentList.items.push(item);
+      continue;
+    }
+
+    m = line.match(olMarker);
+    if (m) {
+      const item = m[2];
+      if (!currentList || currentList.type !== "ol") {
+        flushList();
+        currentList = { type: "ol", items: [] };
+      }
+      currentList.items.push(item);
+      continue;
+    }
+
+    // Plain line
+    flushList();
+    if (line.length > 0) {
+      out.push(line + "<br>");
+    } else {
+      // paragraph break
+      out.push("<br>");
+    }
+  }
+
+  flushList();
+
+  // Tidy trailing <br>
+  return out.join("\n").replace(/(<br>\s*)+$/,"");
 }
 
 function addTextDecoration(current: string, value: string) {
